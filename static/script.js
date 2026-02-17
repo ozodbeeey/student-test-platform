@@ -27,7 +27,8 @@ async function uploadFile() {
         });
 
         if (!response.ok) {
-            throw new Error('Fayl yuklashda xatolik yuz berdi.');
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Fayl yuklashda xatolik yuz berdi.');
         }
 
         const data = await response.json();
