@@ -36,34 +36,34 @@
 
         <!-- Settings Section -->
         <div id="settings-section" class="settings-container hidden">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <h2 style="font-size: 1.8rem;">⚙️ Test Sozlamalari</h2>
-                <p id="settings-subtitle" style="color: #666;">Fan: Noma'lum</p>
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 5px;">⚙️ Test Sozlamalari</h2>
+                <p id="settings-subtitle">Fan: Noma'lum</p>
             </div>
 
             <div class="form-group">
                 <label>Nechta savol yechmoqchisiz?</label>
-                <div style="display: flex; gap: 10px;">
+                <div class="input-group">
                     <button id="btn-all-questions" class="filter-btn active"
                         onclick="setQuestionCount('all')">Barchasi</button>
                     <input type="number" id="custom-count" placeholder="Masalan, 5" class="custom-input"
                         oninput="setQuestionCount('custom')">
                 </div>
-                <p id="total-questions-info" style="font-size: 0.9rem; color: #666; margin-top: 5px;">Mavjud: 0 ta savol
-                </p>
+                <p id="total-questions-info" style="font-size: 0.85rem; color: #888; margin-top: 8px;">Mavjud: 0 ta
+                    savol</p>
             </div>
 
             <div class="form-group">
                 <label>Vaqt chegarasi (daqiqada):</label>
-                <input type="number" id="time-limit" placeholder="Cheklovsiz (ixtiyoriy)" class="custom-input"
-                    style="width: 100%;">
+                <div class="input-group">
+                    <input type="number" id="time-limit" placeholder="Cheklovsiz (ixtiyoriy)" class="custom-input"
+                        style="width: 100%;">
+                </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 30px;">
-                <button class="action-btn primary" style="width: 100%; padding: 15px; font-size: 1.1rem;"
-                    onclick="startTest()">🚀 Boshlash</button>
-                <button class="action-btn secondary" style="width: 100%;" onclick="goBackToUpload()">← Ortga
-                    qaytish</button>
+            <div class="settings-actions">
+                <button class="action-btn primary" onclick="startTest()">🚀 Boshlash</button>
+                <button class="action-btn secondary" onclick="goBackToUpload()">← Ortga qaytish</button>
             </div>
         </div>
 
