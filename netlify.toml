@@ -1,5 +1,5 @@
 [build]
-  command = "mkdir -p functions && cp main.py functions/api.py && cp file_parser.py functions/file_parser.py && cp credentials.txt functions/credentials.txt && cp -r static functions/static && pip install -t functions/ -r requirements.txt"
+  command = "mkdir -p functions/api && cp main.py functions/api/api.py && cp file_parser.py functions/api/file_parser.py && cp credentials.txt functions/api/credentials.txt && cp -r static functions/api/static && pip install -t functions/api -r requirements.txt"
   functions = "functions"
   publish = "public" # Empty folder to prevent default static serving
 

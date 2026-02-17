@@ -10,11 +10,14 @@ from file_parser import parse_test_file
 
 app = FastAPI()
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Get absolute path of the current directory (where this script is)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Mount static files using absolute path
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 # Text file containing credentials
-CREDENTIALS_FILE = "credentials.txt"
+CREDENTIALS_FILE = os.path.join(BASE_DIR, "credentials.txt")
 # Store active sessions: session_id -> username
 sessions = {}
 
@@ -39,7 +42,7 @@ async def login_page(request: Request):
     # If already logged in, redirect to home
     if get_current_user(request):
         return RedirectResponse(url="/", status_code=302)
-    return FileResponse('static/login.html')
+    return FileResponse(os.path.join(BASE_DIR, 'static/login.html'))
 
 @app.post("/login")
 async def login(username: str = Form(...), password: str = Form(...)):
@@ -66,7 +69,7 @@ async def logout(request: Request):
 async def read_index(user: Optional[str] = Depends(get_current_user)):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
-    return FileResponse('static/index.html')
+    return FileResponse(os.path.join(BASE_DIR, 'static/index.html'))
 
 @app.post("/upload")
 async def upload_file(request: Request, file: UploadFile = File(...), user: Optional[str] = Depends(get_current_user)):
