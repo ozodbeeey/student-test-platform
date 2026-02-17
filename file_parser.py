@@ -23,8 +23,9 @@ def parse_text_content(text):
     # Normalize newlines
     text = text.replace('\r\n', '\n')
     
-    # Split by question separator '++++'
-    raw_questions = text.split('++++')
+    # Split by question separator '++++' (allow flexible whitespace around it)
+    # Regex look for 4 or more plus signs
+    raw_questions = re.split(r'\+{4,}', text)
     
     parsed_questions = []
     question_id = 1
@@ -34,11 +35,15 @@ def parse_text_content(text):
         if not raw_q:
             continue
             
-        # Split by option separator '===='
-        parts = raw_q.split('====')
+        # Split by option separator '====' (allow flexible whitespace)
+        # Regex look for 4 or more equals signs
+        parts = re.split(r'={4,}', raw_q)
         
         # First part is the question text
         question_text = parts[0].strip()
+        
+        # If no options found by delimiter, try splitting by newlines if looks like options?
+        # For now, let's stick to the delimiter but be robust about it.
         
         # Remaining parts are options
         options = []
@@ -65,5 +70,5 @@ def parse_text_content(text):
                 "options": options
             })
              question_id += 1
-             
+              
     return parsed_questions
