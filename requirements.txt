@@ -5,3 +5,4 @@ python-docx
 pdfplumber
 jinja2
 mangum
+uvicorn
