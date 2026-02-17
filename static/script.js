@@ -1,21 +1,47 @@
 let allQuestions = [];
-let currentQuestions = [];
-let userAnswers = {}; // { questionId: { selected: index, correct: boolean } }
-let isMistakesMode = false;
+let quizQuestions = [];
+let userAnswers = {}; // { questionId: { selectedOptionId: id, isCorrect: bool } }
+let currentQuestionIndex = 0;
+let timer = null;
+let timeRemaining = 0;
+let settings = {
+    count: 'all', // 'all' or 'custom'
+    customCount: 5,
+    timeLimit: null // in seconds
+};
 
-// Handle file selection
+// --- Upload Section ---
+
 document.getElementById('file-input').addEventListener('change', function (e) {
     if (e.target.files.length > 0) {
         document.getElementById('file-name').textContent = e.target.files[0].name;
-        document.getElementById('start-btn').classList.remove('hidden');
+        document.getElementById('params-btn').classList.remove('hidden');
     }
 });
 
 async function uploadFile() {
+    // This function is now triggered by "Fayl tanlash" change indirectly or we can keep it for direct upload if needed.
+    // Actually, in the new UI, we upload first, then show settings.
+    // But the user clicks "Davom etish" (params-btn) to proceed.
+    // Let's modify the flow: 
+    // 1. Select file. 
+    // 2. Click "Davom etish". 
+    // 3. Upload file to server to parse. 
+    // 4. If success, show Settings.
+}
+
+async function showSettings() {
     const fileInput = document.getElementById('file-input');
     const file = fileInput.files[0];
 
-    if (!file) return;
+    if (!file) {
+        alert("Iltimos, avval fayl tanlang!");
+        return;
+    }
+
+    // Show loading
+    document.getElementById('loading-spinner').classList.remove('hidden');
+    document.getElementById('params-btn').classList.add('hidden');
 
     const formData = new FormData();
     formData.append('file', file);
@@ -33,115 +59,217 @@ async function uploadFile() {
 
         const data = await response.json();
         allQuestions = data.questions;
-        startQuiz(allQuestions);
+
+        if (!allQuestions || allQuestions.length === 0) {
+            throw new Error("Fayldan savollar topilmadi!");
+        }
+
+        // Show Settings UI
+        document.getElementById('upload-section').classList.add('hidden');
+        document.getElementById('settings-section').classList.remove('hidden');
+
+        // Update stats
+        document.getElementById('total-questions-info').textContent = `Mavjud: ${allQuestions.length} ta savol`;
+        document.getElementById('settings-subtitle').textContent = `Fayl: ${file.name}`;
 
     } catch (error) {
         alert(error.message);
+        document.getElementById('params-btn').classList.remove('hidden');
+    } finally {
+        document.getElementById('loading-spinner').classList.add('hidden');
     }
 }
 
-function startQuiz(questions) {
+// --- Settings Section ---
 
-    if (!questions || questions.length === 0) {
-        alert("Fayldan savollar topilmadi! Iltimos, fayl formatini tekshiring (++++ va ==== belgilari).");
-        location.reload();
-        return;
+function setQuestionCount(type) {
+    settings.count = type;
+
+    // UI Updates
+    document.getElementById('btn-all-questions').classList.remove('active');
+    const customInput = document.getElementById('custom-count');
+
+    if (type === 'all') {
+        document.getElementById('btn-all-questions').classList.add('active');
+        customInput.value = '';
+    } else {
+        customInput.focus();
+    }
+}
+
+function goBackToUpload() {
+    document.getElementById('settings-section').classList.add('hidden');
+    document.getElementById('upload-section').classList.remove('hidden');
+    document.getElementById('params-btn').classList.remove('hidden');
+}
+
+// --- Quiz Logic ---
+
+function startTest() {
+    // 1. Apply Settings
+    let count = allQuestions.length;
+    if (settings.count === 'custom') {
+        const inputVal = parseInt(document.getElementById('custom-count').value);
+        if (inputVal && inputVal > 0 && inputVal <= allQuestions.length) {
+            count = inputVal;
+        }
     }
 
-    currentQuestions = questions;
+    // Prepare questions (shuffle order of questions?)
+    // User didn't explicitly ask to shuffle questions, but usually anticipated.
+    // Let's shuffle questions for better experience.
+    const shuffledQuestions = [...allQuestions].sort(() => 0.5 - Math.random());
+    quizQuestions = shuffledQuestions.slice(0, count);
+
+    // Shuffle options for each question
+    quizQuestions.forEach(q => {
+        q.options = shuffleArray(q.options);
+    });
+
+    // Time Limit
+    const timeInput = parseInt(document.getElementById('time-limit').value);
+    if (timeInput && timeInput > 0) {
+        settings.timeLimit = timeInput * 60; // seconds
+        timeRemaining = settings.timeLimit;
+    } else {
+        settings.timeLimit = null;
+    }
+
+    // Reset State
+    currentQuestionIndex = 0;
     userAnswers = {};
 
-    document.getElementById('upload-section').classList.add('hidden');
-    document.getElementById('results-section').classList.add('hidden');
+    // Switch UI
+    document.getElementById('settings-section').classList.add('hidden');
     document.getElementById('quiz-section').classList.remove('hidden');
 
-    renderQuestions(currentQuestions);
-}
-
-function renderQuestions(questions) {
-    const container = document.getElementById('questions-container');
-    container.innerHTML = '';
-
-    updateProgress();
-
-    questions.forEach((q, index) => {
-        const card = document.createElement('div');
-        card.className = 'question-card';
-        card.id = `q-${q.id}`;
-
-        // Header
-        const header = document.createElement('div');
-        header.className = 'question-text';
-        header.textContent = `${index + 1}. ${q.question}`;
-        card.appendChild(header);
-
-        // Options
-        const optionsList = document.createElement('ul');
-        optionsList.className = 'options-list';
-
-        q.options.forEach((opt) => {
-            const li = document.createElement('li');
-            li.className = 'option-item';
-            li.textContent = opt.text;
-            li.onclick = () => checkAnswer(q.id, opt, li, optionsList);
-            optionsList.appendChild(li);
-        });
-
-        card.appendChild(optionsList);
-        container.appendChild(card);
-    });
-
-    document.getElementById('finish-btn').classList.remove('hidden');
-}
-
-function checkAnswer(questionId, option, element, optionsList) {
-    // If already answered, do nothing
-    if (userAnswers[questionId]) return;
-
-    const isCorrect = option.isCorrect;
-    userAnswers[questionId] = { isCorrect: isCorrect, selectedOption: option };
-
-    // Disable all options for this question
-    Array.from(optionsList.children).forEach(li => {
-        li.classList.add('disabled');
-        // If this option matches the correct answer, highlight it green
-        // We need to find the option data that corresponds to this LI, but here we can just rely on structure
-        // Or better, logic:
-    });
-
-    // Find the correct option in the list to highlight it green anyway
-    const question = currentQuestions.find(q => q.id === questionId);
-
-    // Highlight selected
-    if (isCorrect) {
-        element.classList.add('correct');
+    // Start Timer
+    if (settings.timeLimit) {
+        startTimer();
     } else {
-        element.classList.add('incorrect');
-        // Highlight the correct one
-        const correctOpt = question.options.find(o => o.isCorrect);
-        // Find the LI that has this text
-        Array.from(optionsList.children).forEach(li => {
-            if (li.textContent === correctOpt.text) {
-                li.classList.add('correct');
-            }
-        });
+        document.getElementById('timer-display').classList.add('hidden');
     }
 
-    updateProgress();
+    renderQuestion(0);
 }
 
-function updateProgress() {
-    const total = currentQuestions.length;
-    const answered = Object.keys(userAnswers).length;
-
-    const progressText = document.getElementById('progress-text');
-    const progressFill = document.getElementById('progress-fill');
-
-    if (progressText) progressText.textContent = `Savol: ${answered} / ${total}`;
-    if (progressFill) progressFill.style.width = `${(answered / total) * 100}%`;
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
+
+function startTimer() {
+    document.getElementById('timer-display').classList.remove('hidden');
+    updateTimerDisplay();
+
+    timer = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining <= 0) {
+            clearInterval(timer);
+            finishTest();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    document.getElementById('timer-display').textContent =
+        `⏱ ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    // Warning color
+    if (timeRemaining < 60) {
+        document.getElementById('timer-display').style.color = '#e53e3e';
+    }
+}
+
+function renderQuestion(index) {
+    const question = quizQuestions[index];
+    const container = document.getElementById('current-question-card');
+
+    // Update Header
+    document.getElementById('progress-text').textContent = `Savol ${index + 1} / ${quizQuestions.length}`;
+
+    // Build Card Content
+    let html = `<div class="question-text">${index + 1}. ${question.question}</div>`;
+    html += `<ul class="options-list">`;
+
+    question.options.forEach(opt => {
+        // Check if selected
+        const answer = userAnswers[question.id];
+        let className = 'option-item';
+
+        if (answer) {
+            if (answer.selectedOptionId === opt.id) {
+                className += ' selected'; // Just visual marker
+                // In this design, we might want to highlight correct/incorrect immediately?
+                // User didn't specify "Exam mode" (hidden results) or "Practice mode".
+                // In previous version it showed correct/incorrect immediately. 
+                // Let's keep immediate feedback for now, but cleaner.
+                if (opt.isCorrect) className += ' correct';
+                else className += ' incorrect';
+            } else if (answer.selectedOptionId !== opt.id && opt.isCorrect && answer.selectedOptionId) {
+                // Show correct answer if user picked wrong
+                className += ' correct';
+            }
+            className += ' disabled';
+        }
+
+        html += `<li class="${className}" onclick="selectAnswer(${question.id}, ${opt.id}, ${opt.isCorrect})">${opt.text}</li>`;
+    });
+
+    html += `</ul>`;
+    container.innerHTML = html;
+
+    // Update Buttons
+    document.getElementById('prev-btn').disabled = index === 0;
+
+    const nextBtn = document.getElementById('next-btn');
+    const finishBtn = document.getElementById('finish-btn');
+
+    if (index === quizQuestions.length - 1) {
+        nextBtn.classList.add('hidden');
+        finishBtn.classList.remove('hidden');
+    } else {
+        nextBtn.classList.remove('hidden');
+        finishBtn.classList.add('hidden');
+    }
+}
+
+function selectAnswer(questionId, optionId, isCorrect) {
+    if (userAnswers[questionId]) return; // Already answered
+
+    // Find option text for completeness if needed, but we store ID
+    userAnswers[questionId] = { selectedOptionId: optionId, isCorrect: isCorrect };
+
+    // Re-render to show feedback
+    renderQuestion(currentQuestionIndex);
+}
+
+function nextQuestion() {
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion(currentQuestionIndex);
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderQuestion(currentQuestionIndex);
+    }
+}
+
+// --- Results Section ---
 
 function finishTest() {
+    clearInterval(timer);
+
     document.getElementById('quiz-section').classList.add('hidden');
     document.getElementById('results-section').classList.remove('hidden');
 
@@ -149,7 +277,7 @@ function finishTest() {
 }
 
 function calculateResults() {
-    const total = currentQuestions.length;
+    const total = quizQuestions.length;
     let correctCount = 0;
 
     Object.values(userAnswers).forEach(ans => {
@@ -161,7 +289,6 @@ function calculateResults() {
     document.getElementById('score-display').textContent = `${percentage}%`;
     document.getElementById('stats-display').textContent = `To'g'ri: ${correctCount}, Noto'g'ri: ${total - correctCount}, Jami: ${total}`;
 
-    // Check if there are mistakes
     const hasMistakes = correctCount < total;
     if (hasMistakes) {
         document.getElementById('mistakes-btn').classList.remove('hidden');
@@ -171,19 +298,29 @@ function calculateResults() {
 }
 
 function restartTest() {
-    // Reload page or reset state
     location.reload();
 }
 
 function workOnMistakes() {
-    isMistakesMode = true;
+    // Filter wrong answers
+    const wrongQuestionIds = quizQuestions.filter(q => {
+        const ans = userAnswers[q.id];
+        return !ans || !ans.isCorrect;
+    }).map(q => q.id);
 
-    // Filter questions that were answered incorrectly OR not answered at all
-    const incorrectQuestionIds = currentQuestions
-        .filter(q => !userAnswers[q.id] || !userAnswers[q.id].isCorrect)
-        .map(q => q.id);
+    if (wrongQuestionIds.length === 0) return;
 
-    const mistakeQuestions = allQuestions.filter(q => incorrectQuestionIds.includes(q.id));
+    // Setup new quiz with mistakes
+    quizQuestions = quizQuestions.filter(q => wrongQuestionIds.includes(q.id));
 
-    startQuiz(mistakeQuestions);
+    // Reset state
+    currentQuestionIndex = 0;
+    userAnswers = {};
+    settings.timeLimit = null; // No timer for mistakes
+
+    document.getElementById('results-section').classList.add('hidden');
+    document.getElementById('quiz-section').classList.remove('hidden');
+    document.getElementById('timer-display').classList.add('hidden');
+
+    renderQuestion(0);
 }

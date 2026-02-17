@@ -12,7 +12,7 @@
 <body>
 
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h1>TestGenius</h1>
             <a href="/logout"
                 style="text-decoration: none; color: #dc3545; font-weight: bold; padding: 5px 10px; border: 1px solid #dc3545; border-radius: 4px;">Chiqish</a>
@@ -24,27 +24,70 @@
             <h2>Test faylini yuklash</h2>
             <p>Word (.docx) yoki PDF (.pdf) formatdagi faylni tanlang.</p>
 
-            <input type="file" id="file-input" accept=".docx, .pdf">
-            <button class="upload-btn" onclick="document.getElementById('file-input').click()">Fayl tanlash</button>
-            <p id="file-name"></p>
+            <input type="file" id="file-input" accept=".docx, .pdf" hidden>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <button class="upload-btn" onclick="document.getElementById('file-input').click()">Fayl tanlash</button>
+                <span id="file-name" style="margin-top: 15px;"></span>
+            </div>
 
-            <button id="start-btn" class="start-btn hidden" onclick="uploadFile()">Testni Boshlash</button>
-            <div id="loading-spinner" class="hidden">Yuklanmoqda...</div>
+            <button id="params-btn" class="start-btn hidden" onclick="showSettings()">Davom etish</button>
+            <div id="loading-spinner" class="hidden" style="margin-top: 10px; color: #666;">Yuklanmoqda...</div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings-section" class="settings-container hidden">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="font-size: 1.8rem;">⚙️ Test Sozlamalari</h2>
+                <p id="settings-subtitle" style="color: #666;">Fan: Noma'lum</p>
+            </div>
+
+            <div class="form-group">
+                <label>Nechta savol yechmoqchisiz?</label>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-all-questions" class="filter-btn active"
+                        onclick="setQuestionCount('all')">Barchasi</button>
+                    <input type="number" id="custom-count" placeholder="Masalan, 5" class="custom-input"
+                        oninput="setQuestionCount('custom')">
+                </div>
+                <p id="total-questions-info" style="font-size: 0.9rem; color: #666; margin-top: 5px;">Mavjud: 0 ta savol
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label>Vaqt chegarasi (daqiqada):</label>
+                <input type="number" id="time-limit" placeholder="Cheklovsiz (ixtiyoriy)" class="custom-input"
+                    style="width: 100%;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 30px;">
+                <button class="action-btn primary" style="width: 100%; padding: 15px; font-size: 1.1rem;"
+                    onclick="startTest()">🚀 Boshlash</button>
+                <button class="action-btn secondary" style="width: 100%;" onclick="goBackToUpload()">← Ortga
+                    qaytish</button>
+            </div>
         </div>
 
         <!-- Quiz Section -->
         <div id="quiz-section" class="quiz-container hidden">
-            <div class="quiz-header">
-                <div id="progress-text">Savol: 0 / 0</div>
-                <div class="progress-bar-bg">
-                    <div id="progress-fill" class="progress-fill"></div>
+            <div class="quiz-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div id="progress-text" style="color: #666;">Savol 1 / 10</div>
+                <div id="timer-display" style="font-weight: bold; color: #333;">⏱ 00:00</div>
+            </div>
+
+            <div id="questions-wrapper">
+                <!-- Question Card -->
+                <div id="current-question-card" class="question-card">
+                    <!-- Dynamic Content -->
                 </div>
             </div>
 
-            <div id="questions-container">
-                <!-- Questions will be injected here -->
+            <div class="quiz-footer"
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <button id="prev-btn" class="nav-btn" onclick="prevQuestion()" disabled>← Oldingi</button>
+                <button id="finish-btn" class="nav-btn warning hidden" onclick="finishTest()">🏁 Yakunlash</button>
+                <button id="next-btn" class="nav-btn" onclick="nextQuestion()">Keyingi →</button>
             </div>
-            <button id="finish-btn" class="action-btn hidden" onclick="finishTest()">Testni Yakunlash</button>
         </div>
 
         <!-- Results Section -->
