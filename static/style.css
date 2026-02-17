@@ -490,33 +490,66 @@ h1 {
 }
 
 @media (max-width: 500px) {
+    body {
+        padding: 10px;
+        /* Reduced body padding */
+        align-items: flex-start;
+        /* Allow scrolling from top */
+    }
+
     .container {
-        padding: 24px;
+        padding: 20px;
         margin: 0;
-        border-radius: 0;
-        box-shadow: none;
-        height: 100vh;
-        max-width: none;
-        display: flex;
-        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        border-radius: var(--radius-md);
+        /* Keep radius */
+        box-shadow: var(--shadow-sm);
+        /* Keep shadow */
+        min-height: auto;
+        /* Let content dictate height */
+    }
+
+    .header-row {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
     }
 
     .input-group {
         flex-direction: column;
+        width: 100%;
     }
 
     .filter-btn,
     .custom-input {
         width: 100%;
         text-align: center;
+        flex: none;
+        /* Disable flex scaling */
+    }
+
+    .settings-actions {
+        margin-top: 25px;
     }
 
     .quiz-footer {
         flex-direction: column-reverse;
         /* Stack buttons on mobile */
+        gap: 10px;
     }
 
     .nav-btn {
         width: 100%;
+        padding: 12px;
+    }
+
+    /* Ensure no horizontal overflow */
+    .options-list {
+        width: 100%;
+    }
+
+    .option-item {
+        padding: 12px;
+        font-size: 0.95rem;
     }
 }
