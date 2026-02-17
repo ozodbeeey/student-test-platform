@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-multipart
+python-docx
+pdfplumber
+jinja2
+mangum

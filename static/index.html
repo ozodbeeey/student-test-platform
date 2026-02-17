@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestGenius - Student Platform</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>TestGenius</h1>
+
+        <!-- Upload Section -->
+        <div id="upload-section" class="upload-section">
+            <div class="upload-icon">📂</div>
+            <h2>Test faylini yuklash</h2>
+            <p>Word (.docx) yoki PDF (.pdf) formatdagi faylni tanlang.</p>
+
+            <input type="file" id="file-input" accept=".docx, .pdf">
+            <button class="upload-btn" onclick="document.getElementById('file-input').click()">Fayl tanlash</button>
+            <p id="file-name"></p>
+
+            <button id="start-btn" class="start-btn hidden" onclick="uploadFile()">Testni Boshlash</button>
+            <div id="loading-spinner" class="hidden">Yuklanmoqda...</div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div id="quiz-section" class="quiz-container hidden">
+            <div class="quiz-header">
+                <div id="progress-text">Savol: 0 / 0</div>
+                <div class="progress-bar-bg">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+            </div>
+
+            <div id="questions-container">
+                <!-- Questions will be injected here -->
+            </div>
+            <button id="finish-btn" class="action-btn hidden" onclick="finishTest()">Testni Yakunlash</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="results-container hidden">
+            <h2>Natijalar</h2>
+            <div class="score-circle">
+                <span id="score-display">0%</span>
+            </div>
+            <p id="stats-display" class="stats-text"></p>
+
+            <div class="action-buttons">
+                <button class="action-btn secondary" onclick="restartTest()">Qayta urinish</button>
+                <button id="mistakes-btn" class="action-btn primary hidden" onclick="workOnMistakes()">Xatolar ustida
+                    ishlash</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
