@@ -12,10 +12,9 @@
 <body>
 
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="header-row">
             <h1>TestGenius</h1>
-            <a href="/logout"
-                style="text-decoration: none; color: #dc3545; font-weight: bold; padding: 5px 10px; border: 1px solid #dc3545; border-radius: 4px;">Chiqish</a>
+            <a href="/logout" class="logout-btn">Chiqish</a>
         </div>
 
         <!-- Upload Section -->
@@ -27,17 +26,18 @@
             <input type="file" id="file-input" accept=".docx, .pdf" hidden>
             <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <button class="upload-btn" onclick="document.getElementById('file-input').click()">Fayl tanlash</button>
-                <span id="file-name" style="margin-top: 15px;"></span>
             </div>
+            <span id="file-name"></span>
 
             <button id="params-btn" class="start-btn hidden" onclick="showSettings()">Davom etish</button>
-            <div id="loading-spinner" class="hidden" style="margin-top: 10px; color: #666;">Yuklanmoqda...</div>
+            <div id="loading-spinner" class="hidden" style="margin-top: 10px; color: var(--text-muted);">Yuklanmoqda...
+            </div>
         </div>
 
         <!-- Settings Section -->
         <div id="settings-section" class="settings-container hidden">
-            <div style="text-align: center; margin-bottom: 25px;">
-                <h2 style="font-size: 1.6rem; margin-bottom: 5px;">⚙️ Test Sozlamalari</h2>
+            <div class="settings-header">
+                <h2>⚙️ Test Sozlamalari</h2>
                 <p id="settings-subtitle">Fan: Noma'lum</p>
             </div>
 
@@ -49,15 +49,14 @@
                     <input type="number" id="custom-count" placeholder="Masalan, 5" class="custom-input"
                         oninput="setQuestionCount('custom')">
                 </div>
-                <p id="total-questions-info" style="font-size: 0.85rem; color: #888; margin-top: 8px;">Mavjud: 0 ta
-                    savol</p>
+                <p id="total-questions-info" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+                    Mavjud: 0 ta savol</p>
             </div>
 
             <div class="form-group">
                 <label>Vaqt chegarasi (daqiqada):</label>
                 <div class="input-group">
-                    <input type="number" id="time-limit" placeholder="Cheklovsiz (ixtiyoriy)" class="custom-input"
-                        style="width: 100%;">
+                    <input type="number" id="time-limit" placeholder="Cheklovsiz (ixtiyoriy)" class="custom-input">
                 </div>
             </div>
 
@@ -69,10 +68,9 @@
 
         <!-- Quiz Section -->
         <div id="quiz-section" class="quiz-container hidden">
-            <div class="quiz-header"
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div id="progress-text" style="color: #666;">Savol 1 / 10</div>
-                <div id="timer-display" style="font-weight: bold; color: #333;">⏱ 00:00</div>
+            <div class="quiz-header">
+                <div id="progress-text">Savol 1 / 10</div>
+                <div id="timer-display">⏱ 00:00</div>
             </div>
 
             <div id="questions-wrapper">
@@ -82,9 +80,9 @@
                 </div>
             </div>
 
-            <div class="quiz-footer"
-                style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+            <div class="quiz-footer">
                 <button id="prev-btn" class="nav-btn" onclick="prevQuestion()" disabled>← Oldingi</button>
+                <div style="flex-grow: 1;"></div> <!-- Spacer -->
                 <button id="finish-btn" class="nav-btn warning hidden" onclick="finishTest()">🏁 Yakunlash</button>
                 <button id="next-btn" class="nav-btn" onclick="nextQuestion()">Keyingi →</button>
             </div>
@@ -93,14 +91,15 @@
         <!-- Results Section -->
         <div id="results-section" class="results-container hidden">
             <h2>Natijalar</h2>
-            <div class="score-circle">
-                <span id="score-display">0%</span>
+            <div class="score-circle" data-score="0%">
+                <!-- Score handled by CSS attr -->
             </div>
-            <p id="stats-display" class="stats-text"></p>
+            <p id="stats-display" style="margin-bottom: 30px; font-size: 1.1rem; color: var(--text-muted);"></p>
 
-            <div class="action-buttons">
-                <button class="action-btn secondary" onclick="restartTest()">Qayta urinish</button>
-                <button id="mistakes-btn" class="action-btn primary hidden" onclick="workOnMistakes()">Xatolar ustida
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button class="start-btn" onclick="restartTest()"
+                    style="width: auto; padding-left: 30px; padding-right: 30px;">Qayta urinish</button>
+                <button id="mistakes-btn" class="nav-btn warning hidden" onclick="workOnMistakes()">Xatolar ustida
                     ishlash</button>
             </div>
         </div>

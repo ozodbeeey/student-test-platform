@@ -286,8 +286,27 @@ function calculateResults() {
 
     const percentage = Math.round((correctCount / total) * 100) || 0;
 
-    document.getElementById('score-display').textContent = `${percentage}%`;
-    document.getElementById('stats-display').textContent = `To'g'ri: ${correctCount}, Noto'g'ri: ${total - correctCount}, Jami: ${total}`;
+    // Update Score Circle
+    const scoreCircle = document.querySelector('.score-circle');
+    scoreCircle.setAttribute('data-score', `${percentage}%`);
+    scoreCircle.style.setProperty('--score', `${percentage}%`);
+
+    // Update color based on score
+    if (percentage >= 80) {
+        scoreCircle.style.setProperty('--secondary-color', '#10B981'); // Emerald
+    } else if (percentage >= 50) {
+        scoreCircle.style.setProperty('--secondary-color', '#F59E0B'); // Amber
+    } else {
+        scoreCircle.style.setProperty('--secondary-color', '#EF4444'); // Red
+    }
+
+    // Text Stats
+    const statsText = document.getElementById('stats-display');
+    statsText.innerHTML = `
+        <strong>${correctCount}</strong> ta to'g'ri <span style="color:#D1D5DB">|</span>
+        <strong>${total - correctCount}</strong> ta noto'g'ri<br>
+        <span style="font-size: 0.9em; margin-top: 5px; display:block">Jami ${total} ta savol</span>
+    `;
 
     const hasMistakes = correctCount < total;
     if (hasMistakes) {
